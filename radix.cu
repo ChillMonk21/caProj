@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include <driver_functions.h>
 
-#include "CycleTimer.h"
+//#include "CycleTimer.h"
 
 __global__ void histogramKernel(int * inArray, int * outArray, int arrayLength, int pitSize, int significantDigit){
 	
