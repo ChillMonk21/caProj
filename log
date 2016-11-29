@@ -1,0 +1,217 @@
+
+
+Running Radix Sort Example in C!
+----------------------------------
+
+Unsorted List: [ 10 2 303 4021 293 1 0 429 480 92 2999 14 ]
+
+
+Running Radix Sort on Unsorted List!
+
+	Sorting: 1's place [ 10 2 303 4021 293 1 0 429 480 92 2999 14 ]
+		Bucket Index	:	4
+		Read Value	:	10
+		Index		:	9
+
+		Bucket Index	:	9
+		Read Value	:	12
+		Index		:	11
+
+		Bucket Index	:	2
+		Read Value	:	7
+		Index		:	6
+
+		Bucket Index	:	0
+		Read Value	:	3
+		Index		:	2
+
+		Bucket Index	:	9
+		Read Value	:	11
+		Index		:	10
+
+		Bucket Index	:	0
+		Read Value	:	2
+		Index		:	1
+
+		Bucket Index	:	1
+		Read Value	:	5
+		Index		:	4
+
+		Bucket Index	:	3
+		Read Value	:	9
+		Index		:	8
+
+		Bucket Index	:	1
+		Read Value	:	4
+		Index		:	3
+
+		Bucket Index	:	3
+		Read Value	:	8
+		Index		:	7
+
+		Bucket Index	:	2
+		Read Value	:	6
+		Index		:	5
+
+		Bucket Index	:	0
+		Read Value	:	1
+		Index		:	0
+
+
+	Bucket: [ 0 3 5 7 9 10 10 10 10 10 ]
+	Sorting: 10's place [ 10 0 480 4021 1 2 92 303 293 14 429 2999 ]
+		Bucket Index	:	9
+		Read Value	:	12
+		Index		:	11
+
+		Bucket Index	:	2
+		Read Value	:	8
+		Index		:	7
+
+		Bucket Index	:	1
+		Read Value	:	6
+		Index		:	5
+
+		Bucket Index	:	9
+		Read Value	:	11
+		Index		:	10
+
+		Bucket Index	:	0
+		Read Value	:	4
+		Index		:	3
+
+		Bucket Index	:	9
+		Read Value	:	10
+		Index		:	9
+
+		Bucket Index	:	0
+		Read Value	:	3
+		Index		:	2
+
+		Bucket Index	:	0
+		Read Value	:	2
+		Index		:	1
+
+		Bucket Index	:	2
+		Read Value	:	7
+		Index		:	6
+
+		Bucket Index	:	8
+		Read Value	:	9
+		Index		:	8
+
+		Bucket Index	:	0
+		Read Value	:	1
+		Index		:	0
+
+		Bucket Index	:	1
+		Read Value	:	5
+		Index		:	4
+
+
+	Bucket: [ 0 4 6 8 8 8 8 8 8 9 ]
+	Sorting: 100's place [ 0 1 2 303 10 14 4021 429 480 92 293 2999 ]
+		Bucket Index	:	9
+		Read Value	:	12
+		Index		:	11
+
+		Bucket Index	:	2
+		Read Value	:	8
+		Index		:	7
+
+		Bucket Index	:	0
+		Read Value	:	7
+		Index		:	6
+
+		Bucket Index	:	4
+		Read Value	:	11
+		Index		:	10
+
+		Bucket Index	:	4
+		Read Value	:	10
+		Index		:	9
+
+		Bucket Index	:	0
+		Read Value	:	6
+		Index		:	5
+
+		Bucket Index	:	0
+		Read Value	:	5
+		Index		:	4
+
+		Bucket Index	:	0
+		Read Value	:	4
+		Index		:	3
+
+		Bucket Index	:	3
+		Read Value	:	9
+		Index		:	8
+
+		Bucket Index	:	0
+		Read Value	:	3
+		Index		:	2
+
+		Bucket Index	:	0
+		Read Value	:	2
+		Index		:	1
+
+		Bucket Index	:	0
+		Read Value	:	1
+		Index		:	0
+
+
+	Bucket: [ 0 7 7 8 9 11 11 11 11 11 ]
+	Sorting: 1000's place [ 0 1 2 10 14 4021 92 293 303 429 480 2999 ]
+		Bucket Index	:	2
+		Read Value	:	11
+		Index		:	10
+
+		Bucket Index	:	0
+		Read Value	:	10
+		Index		:	9
+
+		Bucket Index	:	0
+		Read Value	:	9
+		Index		:	8
+
+		Bucket Index	:	0
+		Read Value	:	8
+		Index		:	7
+
+		Bucket Index	:	0
+		Read Value	:	7
+		Index		:	6
+
+		Bucket Index	:	0
+		Read Value	:	6
+		Index		:	5
+
+		Bucket Index	:	4
+		Read Value	:	12
+		Index		:	11
+
+		Bucket Index	:	0
+		Read Value	:	5
+		Index		:	4
+
+		Bucket Index	:	0
+		Read Value	:	4
+		Index		:	3
+
+		Bucket Index	:	0
+		Read Value	:	3
+		Index		:	2
+
+		Bucket Index	:	0
+		Read Value	:	2
+		Index		:	1
+
+		Bucket Index	:	0
+		Read Value	:	1
+		Index		:	0
+
+
+	Bucket: [ 0 10 10 11 11 12 12 12 12 12 ]
+
+Sorted List:[ 0 1 2 10 14 92 293 303 429 480 2999 4021 ]
+
