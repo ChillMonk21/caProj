@@ -3,51 +3,66 @@
 #include <cuda_runtime.h>
 #include <driver_functions.h>
 
+#include <thrust/scan.h>
+#include <thrust/device_ptr.h>
+#include <thrust/device_malloc.h>
+#include <thrust/device_free.h>
+#include <time.h>
+#include <stdlib.h>
 //#include "CycleTimer.h"
 
-__global__ void histogramKernel(int * inArray, int * outArray, int arrayLength, int pitSize, int significantDigit){
+__global__ void histogramKernel(int * inArray, int * outArray, int arrayLength, int significantDigit){
+
+	int index 	= blockIdx.x * blockDim.x + threadIdx.x;
+
+	int radix;
+	int arrayElement;
+	
+	if(index < (arrayLength))
+	{	
+		arrayElement 		= inArray[index];
+		radix			= ((arrayElement/significantDigit) % 10);
+		
+		atomicAdd(&outArray[radix], 1);
+	}
+}
+
+__global__ void indexArrayKernel(int * inArray, int * bucketArray, int * indexArray, int arrayLength, int significantDigit){
 	
 	int index 	= blockIdx.x * blockDim.x + threadIdx.x;
 
-	int element;
-	int arrayIndex	= index * pitSize;
-
 	int i;
-
-	if(arrayLength < (arrayIndex + pitSize - 1))
-	{
-		for(i = arrayIndex ; i < (arrayLength); i++){
-
-			element		= ((inArray[i]/significantDigit) % 10);
-
-			atomicInc(outArray[element], 1);
-		}
-	}
-	else
-	{
-		for(i = arrayIndex ; i < (arrayIndex + pitSize); i++){
-
-			element		= ((inArray[i]/significantDigit) % 10);
-
-			atomicInc(outArray[element], 1);
+	int arrayElement;
+	int radix;
+	int pocket;
+	
+	if(index < 10){
+		for(i = 0; i < arrayLength; i++){
+	
+			arrayElement 		= inArray[arrayLength-i-1];
+			radix			= ((arrayElement/significantDigit) % 10);
+			
+			if(radix == index){
+				pocket				= --bucketArray[radix];
+				printf("\tArrayElement\t:\t%d\tbucketArray[%d]\t:\t%d\tPocket\t:\t%d\n", arrayElement, radix, bucketArray[radix],pocket);
+				indexArray[arrayLength - i -1] 	= pocket;		
+			}
 		}
 	}
 }
 
-__global__ void semiSortKernel(int * inArray, int * outArray, int* bucket){
+__global__ void semiSortKernel(int * inArray, int * outArray, int* indexArray, int arrayLength, int significantDigit){
 
 	int index 	= blockIdx.x * blockDim.x + threadIdx.x;
 
-	int element;
-	int bucketIndex;
+	int arrayElement;
 	int arrayIndex;
 
 	if(index < arrayLength){
-		element				= inArray[index];
-		bucketIndex			= ((element/significantDigit) % 10);
-		arrayIndex 			= atomicDec(bucket[bucketIndex] , 1);
-
-		outArray[arrayIndex]		= element;
+		arrayElement			= inArray[index];
+		arrayIndex 			= indexArray[index];
+	
+		outArray[arrayIndex]		= arrayElement;
 	}
 	
 	
@@ -72,79 +87,96 @@ int findLargestNum(int * array, int size){
 	return largestNum;
 }
 
-// double cudaScanThrust(int* inarray, int* end, int* resultarray) {
-
-//     int length = end - inarray;
-//     thrust::device_ptr<int> d_input = thrust::device_malloc<int>(length);
-//     thrust::device_ptr<int> d_output = thrust::device_malloc<int>(length);
-    
-//     cudaMemcpy(d_input.get(), inarray, length * sizeof(int), 
-//                cudaMemcpyHostToDevice);
-
-//     double startTime = CycleTimer::currentSeconds();
-
-//     thrust::exclusive_scan(d_input, d_input + length, d_output);
-
-//     cudaThreadSynchronize();
-//     double endTime = CycleTimer::currentSeconds();
-
-//     cudaMemcpy(resultarray, d_output.get(), length * sizeof(int),
-//                cudaMemcpyDeviceToHost);
-//     thrust::device_free(d_input);
-//     thrust::device_free(d_output);
-//     double overallDuration = endTime - startTime;
-//     return overallDuration;
-// }
-
-
 void cudaScanThrust(int* inarray, int arr_length, int* resultarray) {
 
-    int length = arr_length;
-
-    thrust::device_ptr<int> d_input = thrust::device_malloc<int>(length);
-    thrust::device_ptr<int> d_output = thrust::device_malloc<int>(length);
+    	int length = arr_length;
     
-    cudaMemcpy(d_input.get(), inarray, length * sizeof(int), 
-               cudaMemcpyHostToDevice);
+	thrust::device_ptr<int> d_input = thrust::device_malloc<int>(length);
+    	thrust::device_ptr<int> d_output = thrust::device_malloc<int>(length);
+    
+    	cudaMemcpy(d_input.get(), inarray, length * sizeof(int), cudaMemcpyHostToDevice);
 
-    thrust::inclusive_scan(d_input, d_input + length, d_output);
+    	thrust::inclusive_scan(d_input, d_input + length, d_output);
 
-    cudaThreadSynchronize();
+    	cudaThreadSynchronize();
 
-    cudaMemcpy(resultarray, d_output.get(), length * sizeof(int),
-               cudaMemcpyDeviceToHost);
-    thrust::device_free(d_input);
-    thrust::device_free(d_output);
+    	cudaMemcpy(resultarray, d_output.get(), length * sizeof(int), cudaMemcpyDeviceToHost);
+
+    	thrust::device_free(d_input);
+    	thrust::device_free(d_output);
 }
 
 void radixSort(int * array, int size){
 	printf("\n\nRunning Radix Sort on Unsorted List!\n\n");
 
-	int i;
-	int semiSorted[size];
 	int significantDigit 	= 1;
 	int largestNum 		= findLargestNum(array, size);
-	int pitSize		= 4;
+
+	int * inputArray;
+	int * outputArray;
+	int * bucketArray;
+	int * semiSortArray;
+	int * indexArray;
+
+	int indexCheckArray[100000]	={0};
 
 	while (largestNum / significantDigit > 0){
 		printf("\tSorting: %d's place ", significantDigit);
 		printArray(array, size);
-
+		
 		int bucket[10] = { 0 };
+		int threadCount;
+		int blockCount;
+	
+		threadCount 			= 256;
+		blockCount 			= size/threadCount + 1;
 
-		histogramKernel<<<1, 256>>>(array, bucket, size, pitSize, significantDigit); 	
+		cudaMalloc((void **)& inputArray, sizeof(int)*size);
+		cudaMalloc((void **)& indexArray, sizeof(int)*size);
+		cudaMalloc((void **)& outputArray, sizeof(int)*size);
+		cudaMalloc((void **)& semiSortArray, sizeof(int)*size);
+		cudaMalloc((void **)& bucketArray, sizeof(int)*10);
+		
+		cudaMemcpy(inputArray, array, sizeof(int)*size, cudaMemcpyHostToDevice);
+		cudaMemcpy(bucketArray, bucket, sizeof(int)*10, cudaMemcpyHostToDevice);
+	 	
+		histogramKernel<<<blockCount, threadCount>>>(inputArray, bucketArray, size, significantDigit); 	
+		cudaThreadSynchronize();
+		
+		
+		cudaMemcpy(bucket, bucketArray, sizeof(int)*10, cudaMemcpyDeviceToHost);
+		printf("\tBucket Array");
+		printArray(bucket, 10);
+		
 
-		cudaScanThrust(bucket, 10, bucket);	
-					
-		semiSortKernel<<<1, 256>>>(array, semiSorted, bucket)
+		cudaScanThrust(bucketArray, 10, bucketArray);	
+		cudaMemcpy(bucket, bucketArray, sizeof(int)*10, cudaMemcpyDeviceToHost);
+		printf("\tBucket Array");
+		printArray(bucket, 10);
+		
+		indexArrayKernel<<<blockCount, threadCount>>>(inputArray, bucketArray, indexArray, size, significantDigit);
+		cudaThreadSynchronize();
+		cudaMemcpy(indexCheckArray, indexArray, sizeof(int)*size, cudaMemcpyDeviceToHost);
+		printf("\tIndex Array");
+		printArray(indexCheckArray, size);
 
-		for (i = 0; i < size; i++)
-			array[i] = semiSorted[i];
+		semiSortKernel<<<blockCount, threadCount>>>(inputArray, semiSortArray, indexArray, size, significantDigit);
+		cudaThreadSynchronize();
+		cudaMemcpy(array, semiSortArray, sizeof(int)*size, cudaMemcpyDeviceToHost);
+		
+		printf("\tSorted Array");
+		printArray(array, size);
 
 		significantDigit *= 10;
 
 		printf("\n\tBucket: ");
 		printArray(bucket, 10);
+
+		cudaFree(inputArray);
+		cudaFree(indexArray);
+		cudaFree(bucketArray);
+		cudaFree(outputArray);
+		cudaFree(semiSortArray);
 
 	}
 }
@@ -154,17 +186,25 @@ int main(){
 	printf("\n\nRunning Radix Sort Example in C!\n");
 	printf("----------------------------------\n");
 
-	int size = 12;
+	int size = 100000;
+	int* array;
+	int i;
+	int list[size];
 
-	int list[] = {10, 2, 303, 4021, 293, 1, 0, 429, 480, 92, 2999, 14};
+	srand(time(NULL));
 
+	for(i =0; i < size; i++){
+		list[i]		= rand()%75;
+	}
+	
+	array = &list[0];
 	printf("\nUnsorted List: ");
-	printArray(&list[0], size);
+	printArray(array, size);
 
-	radixSort(&list[0], size);
+	radixSort(array, size);
 
 	printf("\nSorted List:");
-	printArray(&list[0], size);
+	printArray(array, size);
 
 	printf("\n");
 

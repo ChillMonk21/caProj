@@ -71,10 +71,17 @@ int main(){
 
 	printf("\n\nRunning Radix Sort Example in C!\n");
 	printf("----------------------------------\n");
+	int i;
+	int size = 1000;
 
-	int size = 12;
+	int list[1000];
 
-	int list[] = {10, 2, 303, 4021, 293, 1, 0, 429, 480, 92, 2999, 14};
+	srand(time(NULL));
+
+	for(i =0; i < 1000; i++){
+		list[i]		= rand()%100;
+	}
+	//int list[] = {10, 2, 303, 4021, 293, 1, 0, 429, 480, 92, 2999, 14};
 
 	printf("\nUnsorted List: ");
 	printArray(&list[0], size);
