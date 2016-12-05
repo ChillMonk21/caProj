@@ -126,7 +126,7 @@ void radixSort(int * array, int size){
 	cudaMalloc((void **)& bucketArray, sizeof(int)*10);
 	
 
-	int radixSortArray[20];	
+	int radixSortArray[100000];	
 	while (largestNum / significantDigit > 0){
 		printf("\tSorting: %d's place ", significantDigit);
 		printArray(array, size);
@@ -134,8 +134,8 @@ void radixSort(int * array, int size){
 		int threadCount;
 		int blockCount;
 	
-		threadCount 			= 10;
-		blockCount 			= 2;
+		threadCount 			= 256;
+		blockCount 			= (size-1)/threadCount +1;
 
 		
 		int bucket[10] = { 0 };
@@ -191,7 +191,7 @@ int main(){
 	printf("\n\nRunning Radix Sort Example in C!\n");
 	printf("----------------------------------\n");
 
-	int size = 20;
+	int size = 100000;
 	int* array;
 	int i;
 	int list[size];
@@ -199,7 +199,7 @@ int main(){
 	srand(time(NULL));
 
 	for(i =0; i < size; i++){
-		list[i]		= rand()%75;
+		list[i]		= size -i;
 	}
 	
 	array = &list[0];
