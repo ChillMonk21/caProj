@@ -1,5 +1,7 @@
 #include <stdio.h>
-
+#include <time.h>
+#include "CycleTimer.h"
+#define SIZE 1000000
 void printArray(int * array, int size){
 	int i;
 	printf("[ ");
@@ -21,7 +23,7 @@ int findLargestNum(int * array, int size){
 	
 
 void radixSort(int * array, int size){
-	printf("\n\nRunning Radix Sort on Unsorted List!\n\n");
+	//printf("\n\nRunning Radix Sort on Unsorted List!\n\n");
 
 	int i;
 	int semiSorted[size];
@@ -29,8 +31,8 @@ void radixSort(int * array, int size){
 	int largestNum = findLargestNum(array, size);
 
 	while (largestNum / significantDigit > 0){
-		printf("\tSorting: %d's place ", significantDigit);
-		printArray(array, size);
+		//printf("\tSorting: %d's place ", significantDigit);
+		//printArray(array, size);
 
 		int bucket[10] = { 0 };
 
@@ -49,9 +51,9 @@ void radixSort(int * array, int size){
 			readValue		= bucket[bucketIndex];
 			index 			= (--bucket[bucketIndex]);
 			
-			printf("\t\tBucket Index\t:\t%d\n", bucketIndex);
-			printf("\t\tRead Value\t:\t%d\n", readValue);
-			printf("\t\tIndex\t\t:\t%d\n\n", index);
+			//printf("\t\tBucket Index\t:\t%d\n", bucketIndex);
+			//printf("\t\tRead Value\t:\t%d\n", readValue);
+			//printf("\t\tIndex\t\t:\t%d\n\n", index);
 
 			semiSorted[index] = array[i];
 		}
@@ -61,37 +63,44 @@ void radixSort(int * array, int size){
 
 		significantDigit *= 10;
 
-		printf("\n\tBucket: ");
-		printArray(bucket, 10);
+		//printf("\n\tBucket: ");
+		//printArray(bucket, 10);
 
 	}
 }
 
 int main(){
 
-	printf("\n\nRunning Radix Sort Example in C!\n");
-	printf("----------------------------------\n");
+	//printf("\n\nRunning Radix Sort Example in C!\n");
+	//printf("----------------------------------\n");
 	int i;
-	int size = 1000;
+	int size = SIZE;
 
-	int list[1000];
+	int list[SIZE];
+	
+	double startTime;
+	double endTime;
+	double duration;
 
 	srand(time(NULL));
 
-	for(i =0; i < 1000; i++){
-		list[i]		= rand()%100;
+	for(i =0; i < SIZE; i++){
+		list[i]		= rand()%10000;
 	}
-	//int list[] = {10, 2, 303, 4021, 293, 1, 0, 429, 480, 92, 2999, 14};
 
 	printf("\nUnsorted List: ");
 	printArray(&list[0], size);
-
+	
+	startTime 	= CycleTimer::currentSeconds();
 	radixSort(&list[0], size);
 
+	endTime 	= CycleTimer::currentSeconds();
+	duration	= endTime - startTime;
 	printf("\nSorted List:");
 	printArray(&list[0], size);
 
-	printf("\n");
+	printf("Duration : %0.3f\n", 1000.f * duration);
+	//printf("\n");
 
 	return 0;
 }
